@@ -1,8 +1,10 @@
 <?php
-session_start();
+include("../Model/connection.php");
 
+session_start();
 include_once "checkName.php";
 include_once "checkEmail.php";
+if(isset($_POST['sign_up'])){
 
 $firstName = $_POST['firstName'];
 $lastName = $_POST['lastName'];
@@ -17,43 +19,6 @@ $confirmPassword = $_POST['confirmPassword'];
 
 $invalidInput = false;
 
-function fileWriteAppend(){
-    $current_data = file_get_contents('../Model/user_information.json');
-    $array_data = json_decode($current_data, true);
-    $extra = array(
-        'firstName' => $_POST['firstName'],
-        'lastName' => $_POST['lastName'],
-        'gender' => $_POST['gender'],
-        'dateOfBirth' => $_POST['dateOfBirth'],
-        'address' => $_POST['address'],
-        'emailAddress' => $_POST['emailAddress'],
-        'phoneNumber' => $_POST['phoneNumber'],
-        'username' => $_POST['username'],
-        'password' => $_POST['password']
-    );
-    $array_data[] = $extra;
-    $final_data = json_encode($array_data);
-    return $final_data;
-}
-function fileCreateWrite(){
-    $file=fopen('../Model/user_information.json',"w");
-    $array_data=array();
-    $extra = array(
-        'firstName' => $_POST['firstName'],
-        'lastName' => $_POST['lastName'],
-        'gender' => $_POST['gender'],
-        'dateOfBirth' => $_POST['dateOfBirth'],
-        'address' => $_POST['address'],
-        'emailAddress' => $_POST['emailAddress'],
-        'phoneNumber' => $_POST['phoneNumber'],
-        'username' => $_POST['username'],
-        'password' => $_POST['password']
-    );
-    $array_data[] = $extra;
-    $final_data = json_encode($array_data);
-    fclose($file);
-    return $final_data;
-}
 
 if (empty($firstName)) {
     $_SESSION['emptyFirstName'] = true;
@@ -121,21 +86,27 @@ if ($password != $confirmPassword) {
 }
 if ($invalidInput) {
     header('location: ../View/registration.php');
-} else {
-    if(file_exists('../Model/user_information.json'))
+}
+ else {
+    if($password==$confirmPassword)
 {
+ 
+    $insert = "insert into user (f_name,l_name,gender,dob,address,email,phone,u_name,pass)
+		values('$firstName','$lastName','$gender','$dateOfBirth','$address','$emailAddress','$phoneNumber','$username','$password')";
 
-     $final_data = fileWriteAppend();
-     if(file_put_contents('../Model/user_information.json', $final_data)) {
-          $message = "<label class='text-success'>Data added Success fully</p>";
-     }
+		$query = mysqli_query($con, $insert);
+        if($query){
+			
+			
+            header('location: ../View/log_in.php');
+		}
+        else{
+            
+            header('location: ../View/registration.php');
+        }
+  
 }
-else
-{
-     $final_data = fileCreateWrite();
-     if (file_put_contents('../Model/user_information.json', $final_data)) {
-          $message = "<label class='text-success'>File createed and  data added Success fully</p>";
-     }
+
+
 }
-header('location: ../View/index.php');
 }

@@ -1,6 +1,8 @@
 <?php
+include("../Model/connection.php");
 session_start();
 
+if (isset($_POST['login'])) {
 $username = $_POST['username'];
 $password = $_POST['password'];
 
@@ -21,18 +23,24 @@ if (strlen($password) < 6) {
 if ($invalidInput) {
     header('location: ../View/log_in.php');
 } else {
-    $data = file_get_contents('../Model/user_information.json');
-    $json_arr = json_decode($data, true);
-    foreach ($json_arr as $key => $value) {
-        if($value['username'] == $username && $value['password'] == $password) {
-            setcookie('username', $username, time() + 3600, '/');
-            setcookie('password', $password, time() + 3600, '/');
-            setcookie('authorized', true, time() + 3600, '/');
-            header('location: ../View/home.php');
-        } else {
-            $_SESSION['wrongPassword'] = true;
-            header('location: ../View/log_in.php');
-            unset($_SESSION['wrongPassword']);
-        }
+    $select_user = "select * from user where u_name='$username' AND pass='$password'";
+    $query= mysqli_query($con, $select_user);
+    $check_user = mysqli_num_rows($query);
+
+    if($check_user == 1){
+
+        $isset=true;
+
+    if($isset){
+              $_SESSION['username'] = $username;
+                 setcookie("username",$username, time()+ 3600);
+                 header('location: ../View/home.php'); 
+             }
+             else
+             {
+                header('location: ../View/log_in.php'); 
+             }
+
     }
+}
 }
